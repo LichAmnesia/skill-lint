@@ -1,10 +1,10 @@
 {
-  "name": "skill-guard",
+  "name": "skill-lint",
   "version": "0.1.0",
-  "description": "Security scanner for Claude Code / agent skills. Detects prompt injection, obfuscation, credential exfiltration, and other toxic patterns before you install a skill.",
+  "description": "Security linter for Claude Code / agent skills. Detects prompt injection, obfuscation, credential exfiltration, and other toxic patterns before you install a skill.",
   "type": "module",
   "bin": {
-    "skill-guard": "bin/skill-guard.js"
+    "skill-lint": "bin/skill-lint.js"
   },
   "main": "src/scanner.js",
   "exports": {
@@ -19,12 +19,14 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
-    "start": "node bin/skill-guard.js"
+    "start": "node bin/skill-lint.js"
   },
   "keywords": [
     "claude-code",
     "skill",
     "security",
+    "lint",
+    "linter",
     "scanner",
     "prompt-injection",
     "owasp",
@@ -36,12 +38,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LichAmnesia/skill-guard.git"
+    "url": "git+https://github.com/LichAmnesia/skill-lint.git"
   },
   "bugs": {
-    "url": "https://github.com/LichAmnesia/skill-guard/issues"
+    "url": "https://github.com/LichAmnesia/skill-lint/issues"
   },
-  "homepage": "https://github.com/LichAmnesia/skill-guard#readme",
+  "homepage": "https://github.com/LichAmnesia/skill-lint#readme",
   "engines": {
     "node": ">=20"
   },

@@ -49,7 +49,7 @@ export async function fetchTarget(input) {
     throw new Error(`Only GitHub URLs are supported. Got: ${input}`);
   }
 
-  const tmpRoot = await mkdtemp(join(tmpdir(), 'skill-guard-'));
+  const tmpRoot = await mkdtemp(join(tmpdir(), 'skill-lint-'));
   const cloneArgs = ['clone', '--depth', '1', '--single-branch'];
   if (parsed.ref && parsed.ref !== 'HEAD') {
     cloneArgs.push('--branch', parsed.ref);

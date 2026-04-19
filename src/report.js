@@ -13,7 +13,7 @@ export function printHumanReport(origin, result, opts = {}) {
   const v = verdict;
 
   console.log();
-  console.log(chalk.bold('skill-guard') + chalk.gray(' — AST10 + Snyk ToxicSkills scanner'));
+  console.log(chalk.bold('skill-lint') + chalk.gray(' — AST10 + Snyk ToxicSkills linter'));
   console.log(chalk.gray('target: ') + origin);
   if (frontmatter?.name) console.log(chalk.gray('skill:  ') + chalk.cyan(frontmatter.name));
   if (frontmatter?.description) {
@@ -66,7 +66,7 @@ export function printHumanReport(origin, result, opts = {}) {
 
 export function asJson(origin, result) {
   return JSON.stringify({
-    tool: 'skill-guard',
+    tool: 'skill-lint',
     schemaVersion: 1,
     origin,
     skill: {

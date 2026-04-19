@@ -6,17 +6,17 @@ import { join, basename, resolve } from 'node:path';
 import { homedir } from 'node:os';
 
 const USAGE = `
-skill-guard — Claude Code / agent skill security scanner
+skill-lint — Claude Code / agent skill security scanner
 
 Usage:
-  npx skill-guard <github-url-or-local-path> [options]
+  npx skill-lint <github-url-or-local-path> [options]
 
 Examples:
-  npx skill-guard https://github.com/user/my-skill
-  npx skill-guard https://github.com/user/repo/tree/main/skills/my-skill
-  npx skill-guard ./local-skill
-  npx skill-guard <url> --json
-  npx skill-guard <url> --install ~/.claude/skills/
+  npx skill-lint https://github.com/user/my-skill
+  npx skill-lint https://github.com/user/repo/tree/main/skills/my-skill
+  npx skill-lint ./local-skill
+  npx skill-lint <url> --json
+  npx skill-lint <url> --install ~/.claude/skills/
 
 Options:
   --json                  Output JSON (machine-readable)
