@@ -30,22 +30,29 @@ export default {
     for (const f of ctx.files) {
       if (!EXECUTABLE_EXTS.has(f.ext)) continue;
       if (f.relPath === 'SKILL.md') continue;
+      // Only flag scripts/binaries inside an actual skill directory.
+      const role = ctx.roleOf(f);
+      if (role !== 'skill-script') continue;
+
       if (BINARY_EXTS.has(f.ext)) {
         findings.push(mk(f, SEVERITY.HIGH, `Compiled binary in skill (${f.ext})`));
         continue;
       }
       if (!claimsExec) {
-        findings.push(mk(f, SEVERITY.HIGH, `Executable ${f.ext} but skill description claims only doc/prompt purpose`));
+        // Downgrade — many legitimate skills bundle scripts without explicitly
+        // saying so in the frontmatter. Elevated severity only if combined
+        // with other dangerous findings elsewhere.
+        findings.push(mk(f, SEVERITY.LOW, `Bundled script ${f.ext} — review contents`));
       } else {
-        findings.push(mk(f, SEVERITY.MEDIUM, `Bundled script ${f.ext} — review contents carefully`));
+        findings.push(mk(f, SEVERITY.LOW, `Bundled script ${f.ext} — review contents carefully`));
       }
     }
 
-    // Password-protected archive presence
+    // Password-protected archive presence (only inside skill dirs)
     for (const f of ctx.files) {
-      if (/\.(zip|7z|rar|tar\.gz|tgz)$/i.test(f.relPath)) {
-        findings.push(mk(f, SEVERITY.HIGH, 'Archive inside skill — contents opaque to scanner'));
-      }
+      if (!/\.(zip|7z|rar|tar\.gz|tgz)$/i.test(f.relPath)) continue;
+      if (ctx.roleOf(f) !== 'skill-script') continue;
+      findings.push(mk(f, SEVERITY.HIGH, 'Archive inside skill — contents opaque to scanner'));
     }
 
     return findings;

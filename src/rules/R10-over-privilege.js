@@ -1,3 +1,4 @@
+import YAML from 'yaml';
 import { SEVERITY } from '../severity.js';
 
 export default {
@@ -7,20 +8,9 @@ export default {
   defaultSeverity: SEVERITY.MEDIUM,
   check(ctx) {
     const findings = [];
-    const fm = ctx.frontmatter || {};
-    const text = ctx.skillText || '';
 
-    const allowTools = fm['allowed-tools'] || fm.allowedTools || fm.allow || [];
-    const list = Array.isArray(allowTools) ? allowTools : [allowTools].filter(Boolean);
-    for (const item of list) {
-      const s = String(item);
-      if (/^Bash\(\*\)$/.test(s) || /^Bash\s*$/.test(s)) {
-        findings.push(mk('SKILL.md', SEVERITY.HIGH, 'Frontmatter grants unrestricted Bash(*)'));
-      }
-      if (/^Write\(\*\)$/.test(s) || /^Edit\(\*\)$/.test(s)) {
-        findings.push(mk('SKILL.md', SEVERITY.MEDIUM, `Frontmatter grants unrestricted ${s}`));
-      }
-    }
+    // Run R10 against every SKILL.md, not just the root one.
+    const skills = ctx.files.filter((f) => f.relPath === 'SKILL.md' || f.relPath.endsWith('/SKILL.md'));
 
     // Body-text permission asks
     const bodyFlags = [
@@ -29,15 +19,41 @@ export default {
       { re: /\b--dangerously-skip-permissions\b/i, sev: SEVERITY.CRITICAL, hint: 'invokes --dangerously-skip-permissions' },
       { re: /\bsudo\b/, sev: SEVERITY.MEDIUM, hint: 'requests sudo' },
     ];
-    for (const p of bodyFlags) {
-      if (p.re.test(text)) {
-        findings.push(mk('SKILL.md', p.sev, p.hint));
+
+    for (const skill of skills) {
+      const text = ctx.readText(skill) || '';
+      const fm = parseFrontmatter(text);
+
+      const allowTools = fm['allowed-tools'] || fm.allowedTools || fm.allow || [];
+      const list = Array.isArray(allowTools) ? allowTools : [allowTools].filter(Boolean);
+      for (const item of list) {
+        const s = String(item);
+        if (/^Bash\(\*\)$/.test(s) || /^Bash\s*$/.test(s)) {
+          findings.push(mk(skill.relPath, SEVERITY.HIGH, 'Frontmatter grants unrestricted Bash(*)'));
+        }
+        if (/^Write\(\*\)$/.test(s) || /^Edit\(\*\)$/.test(s)) {
+          findings.push(mk(skill.relPath, SEVERITY.MEDIUM, `Frontmatter grants unrestricted ${s}`));
+        }
+      }
+
+      for (const p of bodyFlags) {
+        if (p.re.test(text)) {
+          findings.push(mk(skill.relPath, p.sev, p.hint));
+        }
       }
     }
 
     return findings;
   },
 };
+
+function parseFrontmatter(text) {
+  if (!text.startsWith('---')) return {};
+  const end = text.indexOf('\n---', 3);
+  if (end < 0) return {};
+  const yaml = text.slice(3, end).replace(/^\s*\n/, '');
+  try { return YAML.parse(yaml) || {}; } catch { return {}; }
+}
 
 function mk(file, severity, message) {
   return {

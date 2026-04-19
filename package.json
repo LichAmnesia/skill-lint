@@ -1,6 +1,6 @@
 {
   "name": "skill-lint",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Security linter for Claude Code / agent skills. Detects prompt injection, obfuscation, credential exfiltration, and other toxic patterns before you install a skill.",
   "type": "module",
   "bin": {

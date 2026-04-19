@@ -3,6 +3,7 @@ import YAML from 'yaml';
 import { ALL_RULES } from './rules/index.js';
 import { walkFiles } from './fetcher.js';
 import { verdict } from './severity.js';
+import { detectMode, classify, downgradeForRole, skipForRole, splitMarkdown, scanTextFor, KNOWN_INSTALLER_HOSTS } from './classify.js';
 
 const TEXT_EXTS = new Set([
   '.md', '.markdown', '.txt', '.rst',
@@ -50,6 +51,8 @@ export async function scanDir(dir) {
   // Preload text for all textual files in parallel
   await Promise.all(files.filter(isText).map(loadText));
 
+  const { mode, skillRoots } = detectMode(files);
+
   const skillFile = files.find((f) => f.relPath === 'SKILL.md');
   let frontmatter = {};
   let skillText = '';
@@ -58,19 +61,48 @@ export async function scanDir(dir) {
     frontmatter = parseFrontmatter(skillText);
   }
 
+  const roleCache = new Map();
+  function roleOf(f) {
+    if (!roleCache.has(f.relPath)) {
+      roleCache.set(f.relPath, classify(f, mode, skillRoots));
+    }
+    return roleCache.get(f.relPath);
+  }
+
   const ctx = {
     files,
     frontmatter,
     skillText,
+    mode,
+    skillRoots,
+    knownInstallerHosts: KNOWN_INSTALLER_HOSTS,
     isText,
     readText(f) { return textCache.get(f.relPath) || ''; },
+    scanText(f) {
+      const t = textCache.get(f.relPath) || '';
+      return scanTextFor(f, t, roleOf(f));
+    },
+    roleOf,
+    splitMarkdown,
   };
 
   const findings = [];
   for (const rule of ALL_RULES) {
     try {
       const res = await rule.check(ctx);
-      if (Array.isArray(res)) findings.push(...res);
+      if (!Array.isArray(res)) continue;
+      for (const raw of res) {
+        const file = files.find((ff) => ff.relPath === raw.file);
+        const role = file ? roleOf(file) : 'other';
+        if (skipForRole(role, raw.ruleId)) continue;
+        // opts allow a rule to mark a finding as still-meaningful-in-readme
+        // (e.g. hardcoded key literal leaks even in docs).
+        const sev = downgradeForRole(raw.severity, role, { allowInReadme: raw._allowInReadme });
+        if (!sev) continue;
+        // strip internal flags before emitting
+        const { _allowInReadme, ...rest } = raw;
+        findings.push({ ...rest, severity: sev, role });
+      }
     } catch (err) {
       findings.push({
         ruleId: rule.id,
@@ -85,8 +117,10 @@ export async function scanDir(dir) {
   }
 
   return {
-    files: files.map((f) => ({ relPath: f.relPath, size: f.size })),
+    files: files.map((f) => ({ relPath: f.relPath, size: f.size, role: roleOf(f) })),
     frontmatter,
+    mode,
+    skillRoots,
     findings,
     verdict: verdict(findings),
   };
