@@ -1,0 +1,52 @@
+{
+  "name": "skill-guard",
+  "version": "0.1.0",
+  "description": "Security scanner for Claude Code / agent skills. Detects prompt injection, obfuscation, credential exfiltration, and other toxic patterns before you install a skill.",
+  "type": "module",
+  "bin": {
+    "skill-guard": "bin/skill-guard.js"
+  },
+  "main": "src/scanner.js",
+  "exports": {
+    ".": "./src/scanner.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node bin/skill-guard.js"
+  },
+  "keywords": [
+    "claude-code",
+    "skill",
+    "security",
+    "scanner",
+    "prompt-injection",
+    "owasp",
+    "ast10",
+    "agentic-ai",
+    "supply-chain"
+  ],
+  "author": "Shen Huang <me@alwa.info> (https://github.com/ShenHuang)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LichAmnesia/skill-guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LichAmnesia/skill-guard/issues"
+  },
+  "homepage": "https://github.com/LichAmnesia/skill-guard#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "yaml": "^2.6.0"
+  }
+}

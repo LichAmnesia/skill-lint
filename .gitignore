@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+.tmp/
+coverage/
+dist/
+.env
+.env.local
+.skill-guard-cache/
